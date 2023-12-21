@@ -157,6 +157,21 @@ AvoidanceModule::AvoidanceModule(
 {
 }
 
+bool AvoidanceModule::hasLaneletAvoidanceTag() const
+{
+  const auto routing_graph = planner_data_->route_handler->getRoutingGraphPtr();
+  const auto lanelet_map = planner_data_->route_handler->getLaneletMapPtr();
+  const auto lanelets =
+    utils::avoidance::getLaneletsOnPath(avoid_data_.reference_path, lanelet_map, planner_data_->self_odometry->pose.pose);
+  for (auto ll : lanelets) {
+    const std::string is_avoidance_enable = ll.attributeOr("avoidance", "else");
+    if (is_avoidance_enable == "yes") {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool AvoidanceModule::isExecutionRequested() const
 {
   DEBUG_PRINT("AVOIDANCE isExecutionRequested");
@@ -166,18 +181,19 @@ bool AvoidanceModule::isExecutionRequested() const
   updateDebugMarker(avoid_data_, path_shifter_, debug_data_);
 
   // there is object that should be avoid. return true.
-  if (!!avoid_data_.stop_target_object) {
-    return true;
+  if (hasLaneletAvoidanceTag()) {
+    if (!!avoid_data_.stop_target_object) {
+      return true;
+    }
+    if (avoid_data_.new_shift_line.empty()) {
+      return false;
+    }
+    return std::any_of(
+      avoid_data_.target_objects.begin(), avoid_data_.target_objects.end(), [](const auto & o) {
+        return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
+      });
   }
-
-  if (avoid_data_.new_shift_line.empty()) {
-    return false;
-  }
-
-  return std::any_of(
-    avoid_data_.target_objects.begin(), avoid_data_.target_objects.end(), [](const auto & o) {
-      return o.is_avoidable || o.reason == AvoidanceDebugFactor::TOO_LARGE_JERK;
-    });
+  return false;
 }
 
 bool AvoidanceModule::isExecutionReady() const
