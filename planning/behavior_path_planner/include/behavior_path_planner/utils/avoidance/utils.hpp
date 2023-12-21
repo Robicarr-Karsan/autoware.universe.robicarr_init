@@ -182,6 +182,18 @@ double calcDistanceToAvoidStartLine(
   const lanelet::ConstLanelets & lanelets, const PathWithLaneId & path,
   const std::shared_ptr<const PlannerData> & planner_data,
   const std::shared_ptr<AvoidanceParameters> & parameters);
+
+std::vector<int64_t> getSortedLaneIdsFromPath(const PathWithLaneId & path);
+
+std::vector<int64_t> getSubsequentLaneIdsSetOnPath(const PathWithLaneId & path, int64_t base_lane_id);
+
+boost::optional<int64_t> getNearestLaneId(
+  const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
+  const geometry_msgs::msg::Pose & current_pose);
+
+std::vector<lanelet::ConstLanelet> getLaneletsOnPath(
+  const PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map,
+  const geometry_msgs::msg::Pose & current_pose);
 }  // namespace behavior_path_planner::utils::avoidance
 
 #endif  // BEHAVIOR_PATH_PLANNER__UTILS__AVOIDANCE__UTILS_HPP_

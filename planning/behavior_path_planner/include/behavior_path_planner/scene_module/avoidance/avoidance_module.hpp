@@ -55,6 +55,7 @@ public:
   BehaviorModuleOutput plan() override;
   BehaviorModuleOutput planWaitingApproval() override;
   bool isExecutionRequested() const override;
+  bool hasLaneletAvoidanceTag() const;
   bool isExecutionReady() const override;
   void processOnEntry() override;
   void processOnExit() override;
